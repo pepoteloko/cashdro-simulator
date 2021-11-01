@@ -1,2 +1,21 @@
 # cashdro-simulator
-Simulador de Cashdro
+
+Pequeño simulador de los webservices de las máquinas de CasDro.
+
+Este pequeño script responde a las peticiones básicas para facilitar una primera fase de la integración básica con
+las máquinas de CashDro.
+
+Este script no tiene memoria, siempre crea el mismo ticket y te dice que está pagado.
+
+El único error que da es si el user+pass es incorrecto.
+
+Este script no es de CashDro, me lo he creado yo para ayudarme con la integración.
+
+## Datos
+
+- Usuario: `admin`
+- Contraseña: `password`
+
+## Mas información
+
+[cashdro.com](https://cashdro.com)
