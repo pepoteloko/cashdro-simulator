@@ -49,12 +49,52 @@ class PerfectTest extends TestCase
      * @depends testAcknowledgeOperationId
      * @param $operationId
      */
-    public function testAskOperation($operationId)
+    public function testAskOperationPending($operationId)
     {
-        // Stop here and mark this test as incomplete.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+        $params = [
+            'name' => 'admin',
+            'password' => 'password',
+            'operation' => 'askOperation',
+            'operationId' => $operationId,
+            'pos_id' => self::POS_ID,
+        ];
+
+        $response = $this->loadUrl('http://local.cashdro.com/index3.php', $params);
+
+        $this->assertEquals($response['code'], 1);
+        $this->assertEquals($response['response']['errorMessage'], 'none');
+        $this->assertEquals($response['response']["operation"]["operation"], [
+            "operationId" => $operationId,
+            "state" => "P",
+        ]);
+
+        return $operationId;
+    }
+
+    /**
+     * @depends testAskOperationPending
+     * @param $operationId
+     */
+    public function testAskOperationFinished($operationId)
+    {
+        $params = [
+            'name' => 'admin',
+            'password' => 'password',
+            'operation' => 'askOperation',
+            'operationId' => $operationId,
+            'pos_id' => self::POS_ID,
+        ];
+
+        $response = $this->loadUrl('http://local.cashdro.com/index3.php', $params);
+
+        $this->assertEquals($response['code'], 1);
+        $this->assertEquals($response['response']['errorMessage'], 'none');
+        $this->assertEquals($response['response']["operation"]["operation"], [
+            "operationId" => $operationId,
+            "state" => "F",
+        ]);
+
+        return $operationId;
     }
 
     /**
@@ -62,10 +102,20 @@ class PerfectTest extends TestCase
      */
     public function testFinishOperation($operationId)
     {
-        // Stop here and mark this test as incomplete.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+        $params = [
+            'name' => 'admin',
+            'password' => 'password',
+            'operation' => 'finishOperation',
+            'operationId' => $operationId,
+            'pos_id' => self::POS_ID,
+        ];
+
+        $response = $this->loadUrl('http://local.cashdro.com/index3.php', $params);
+
+        $this->assertEquals($response['code'], 1);
+        $this->assertEquals($response['response']['errorMessage'], 'none');
+
+        return $operationId;
     }
 
     /**
@@ -73,9 +123,17 @@ class PerfectTest extends TestCase
      */
     public function testSetOperationImported($operationId)
     {
-        // Stop here and mark this test as incomplete.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+        $params = [
+            'name' => 'admin',
+            'password' => 'password',
+            'operation' => 'setOperationImported',
+            'operationId' => $operationId,
+            'pos_id' => self::POS_ID,
+        ];
+
+        $response = $this->loadUrl('http://local.cashdro.com/index3.php', $params);
+
+        $this->assertEquals($response['code'], 1);
+        $this->assertEquals($response['response']['errorMessage'], 'none');
     }
 }

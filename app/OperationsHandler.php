@@ -3,6 +3,7 @@
 namespace App;
 
 use PDO;
+use phpDocumentor\Reflection\Types\Integer;
 
 class OperationsHandler
 {
@@ -38,18 +39,82 @@ class OperationsHandler
     /**
      * @param  Request  $request
      *
-     * @return int
+     * @return bool
      */
-    public function acknowledgeOperation(Request $request): int
+    public function acknowledgeOperation(Request $request): bool
     {
-        // TODO: Buscar en la base de datos
-        // SELECT * FROM operations WHERE id = $request->getOperation() AND pos_id = $request->getPosId()
+        // Buscar en la base de datos
+        $query = "
+            SELECT *
+            FROM operations
+            WHERE pos_id = :posId
+            AND operation_id = :operationId
+        ";
+        $sth = $this->pdo->prepare($query);
+        $sth->execute([':posId' => $request->getPosId(), ':operationId' => $request->getOperationId()]);
+        $result = $sth->fetchAll();
 
-        // TODO: Devolver el estado
-        // 0: OK
-        // 1: No existe
+        if (count($result) == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-        return 0;
+    /**
+     * @param  Request  $request
+     *
+     * @return string
+     */
+    public function askOperation(Request $request): string
+    {
+        // Buscar en la base de datos
+        $result = $this->loadOperation($request);
+
+        if ($result == null) {
+            return "not-found";
+        }
+
+        if ($result['status'] == 'C') {
+            // Lo ponemos en estado "P" de preguntado, así la siguiente vez estará pagado
+            $this->changeStatus($request->getOperationId(), $request->getPosId(), "P");
+
+            return "P";
+        } else {
+            return "F";
+        }
+
+        return "F";
+    }
+
+    public function finishOperation(Request $request)
+    {
+        // Buscar en la base de datos
+        $result = $this->loadOperation($request);
+
+        if ($result == null) {
+            return "not-found";
+        }
+
+        // Lo ponemos en estado "T" de terminado
+        $this->changeStatus($request->getOperationId(), $request->getPosId(), "T");
+
+        return true;
+    }
+
+    public function importedOperation(Request $request)
+    {
+        // Buscar en la base de datos
+        $result = $this->loadOperation($request);
+
+        if ($result == null) {
+            return "not-found";
+        }
+
+        // Lo ponemos en estado "I" de importado
+        $this->changeStatus($request->getOperationId(), $request->getPosId(), "I");
+
+        return true;
     }
 
     /**
@@ -96,5 +161,40 @@ class OperationsHandler
             $maxId = 0;
         }
         return $maxId + 1;
-}
+    }
+
+    private function changeStatus(int $operationId, $posId, string $status)
+    {
+        $query = "
+                UPDATE operations SET status = :status
+                WHERE pos_id = :posId
+                AND operation_id = :operationId
+            ";
+        $sth = $this->pdo->prepare($query);
+        $sth->execute([':posId' => $posId, ':operationId' => $operationId, ':status' => $status]);
+    }
+
+    /**
+     * @param  Request  $request
+     *
+     * @return array|false
+     */
+    public function loadOperation(Request $request)
+    {
+        $query = "
+            SELECT *
+            FROM operations
+            WHERE pos_id = :posId
+            AND operation_id = :operationId
+        ";
+        $sth = $this->pdo->prepare($query);
+        $sth->execute([':posId' => $request->getPosId(), ':operationId' => $request->getOperationId()]);
+        $result = $sth->fetchAll();
+
+        if (count($result) == 0) {
+            return null;
+        } else {
+            return $result[0];
+        }
+    }
 }

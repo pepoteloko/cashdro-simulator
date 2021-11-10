@@ -69,9 +69,9 @@ switch ($request->getOperation()) {
      * Esta es la segunda llamada del proceso: Empieza el pago en la máquina?
      */
     case "acknowledgeOperationId":
-        $status = $operationHandler->acknowledgeOperation($request);
+        $found = $operationHandler->acknowledgeOperation($request);
 
-        if ($status == 0) {
+        if ($found) {
             $response["code"] = 1;
             $response["response"]["errorMessage"] = "none";
         } else {
@@ -84,15 +84,17 @@ switch ($request->getOperation()) {
      * Pregunta por el estado del pago a la máquina
      */
     case "askOperation":
-        if ($request->getOperationId() != 1234) {
+        $status = $operationHandler->askOperation($request);
+
+        if ($status === "not-found") {
             $response["code"] = -2;
             $response["response"]["errorMessage"] = "Operation not found";
         } else {
             $response["code"] = 1;
             $response["response"]["errorMessage"] = "none";
             $response["response"]["operation"]["operation"] = [
-                "operationId" => 1234,
-                "state" => "F",
+                "operationId" => $request->getOperationId(),
+                "state" => $status,
             ];
             $response["response"]["operation"]["devices"] = [
                 "type" => "1",
@@ -106,26 +108,32 @@ switch ($request->getOperation()) {
             $response["response"]["operation"]["withError"] = "false";
             $response["response"]["operation"]["withErrorMRX"] = "false";
         }
+
         break;
 
     /**
      * Finaliza la operacion
      */
     case "finishOperation":
-        if ($request->getOperationId() != 1234) {
+        $status = $operationHandler->finishOperation($request);
+
+        if ($status === "not-found") {
             $response["code"] = -2;
             $response["response"]["errorMessage"] = "Operation not in execution";
         } else {
             $response["code"] = 1;
             $response["response"]["errorMessage"] = "none";
         }
+
         break;
 
     /**
      * Indica a la máquina que el TPV ha marcado el pago como realizado
      */
     case "setOperationImported":
-        if ($request->getOperationId() != 1234) {
+        $status = $operationHandler->importedOperation($request);
+
+        if ($status === "not-found") {
             $response["code"] = -2;
             $response["response"]["errorMessage"] = "Operation not found";
         } else {

@@ -44,7 +44,7 @@ class Request
     public function __construct(array $params)
     {
         $this->operation = $params["operation"];
-        $this->operationId = $params["operationId"];
+        $this->operationId = (int)$params["operationId"];
         $this->name = $params["name"];
         $this->password = $params["password"];
         $this->type = $params["type"];
@@ -63,9 +63,9 @@ class Request
     }
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function getOperationId()
+    public function getOperationId(): int
     {
         return $this->operationId;
     }
